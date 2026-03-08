@@ -2,10 +2,8 @@
 Channel-specific recipient models.
 
 Used to specify desired channel:
-    SMS(phone_number="+15551234567")
-    WhatsApp(phone_number="+15559876543")
-
-Each model serializes to the API shape via to_api_payload().
+    SMS(phone_number="+50212345678")
+    WhatsApp(phone_number="+50212345678")
 """
 
 from abc import abstractmethod
@@ -15,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class Recipient(BaseModel):
-    """Base class for all channels."""
+    """Base class for all recipient channels."""
 
     phone_number: str = Field(..., min_length=1)
 
@@ -23,13 +21,13 @@ class Recipient(BaseModel):
 
     @abstractmethod
     def to_api_payload(self) -> Any:
-        """Serialise to the format this channel's API expects."""
+        """Serialise to the format expected by API for this channel."""
         pass
 
     @property
     @abstractmethod
     def channel(self) -> str:
-        """The channel identifier string sent to the API."""
+        """The channel identifier string expected by the API."""
         pass
 
 
