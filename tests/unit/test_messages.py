@@ -74,3 +74,29 @@ def test_send_whatsapp(client: SinchClient):
         "type": "whatsapp_id",
     }
     assert request_payload["message_content"]["text_message"] == "Hi!"
+
+
+@respx.mock
+def test_get_message(client: SinchClient):
+    respx.get(f"{BASE_URL}/messages/msg_abc123").mock(
+        return_value=httpx.Response(200, json=MESSAGE_PAYLOAD)
+    )
+    msg = client.messages.get("msg_abc123")
+    assert msg.id == "msg_abc123"
+
+
+@respx.mock
+def test_get_message_not_found(client: SinchClient):
+    respx.get(f"{BASE_URL}/messages/missing").mock(
+        return_value=httpx.Response(
+            404,
+            json={
+                "error_code": "NOT_FOUND",
+                "detail": "No such message",
+                "tracking_id": "tr-1",
+            },
+        )
+    )
+    with pytest.raises(NotFoundError) as exc_info:
+        client.messages.get("missing")
+    assert exc_info.value.tracking_id == "tr-1"

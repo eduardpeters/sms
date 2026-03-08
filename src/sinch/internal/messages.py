@@ -30,6 +30,9 @@ class MessagesResource:
         self._http = http
 
     def send(self, to: Recipient, text: str) -> Message:
+        """
+        Send a message to a recipient.
+        """
         request = SendMessageRequest(
             channel=to.channel,
             recipient=to.to_api_payload(),
@@ -38,5 +41,13 @@ class MessagesResource:
         response = self._http.request(
             "POST", "/messages", json=request.to_api_payload()
         )
+        body = response.json()
+        return Message.model_validate(body)
+
+    def get(self, message_id: str) -> Message:
+        """
+        Retrieve a message by its ID.
+        """
+        response = self._http.request("GET", f"/messages/{message_id}")
         body = response.json()
         return Message.model_validate(body)
