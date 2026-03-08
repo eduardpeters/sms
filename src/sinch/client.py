@@ -1,4 +1,5 @@
 from sinch.internal.http import HttpClient
+from sinch.internal.messages import MessagesResource
 
 
 class SinchClient:
@@ -26,3 +27,4 @@ class SinchClient:
         self._auth_token = auth_token
         self._base_url = base_url or self.BASE_URL
         self._http = HttpClient(self._auth_token, self._base_url)
+        self.messages = MessagesResource(self._http)

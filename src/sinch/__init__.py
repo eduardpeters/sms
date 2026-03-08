@@ -7,6 +7,8 @@ from sinch.exceptions import (
     SinchError,
     SinchNetworkError,
 )
+from sinch.models.channels import SMS, WhatsApp
+from sinch.models.message import Message, MessageStatus
 
 __all__ = [
     # Client
@@ -19,4 +21,8 @@ __all__ = [
     "RecallNotAllowedError",
     "SinchNetworkError",
     # Models
+    "Message",
+    "MessageStatus",
+    "SMS",
+    "WhatsApp",
 ]

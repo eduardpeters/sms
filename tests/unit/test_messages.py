@@ -1,0 +1,76 @@
+import json
+from typing import Any
+import pytest
+import respx
+import httpx
+
+from sinch import SinchClient, SMS, WhatsApp, MessageStatus
+from sinch.exceptions import NotFoundError, RecallNotAllowedError
+
+BASE_URL = "https://messaging.api.sinch.com/v1"
+
+MESSAGE_PAYLOAD = {
+    "message_id": "msg_abc123",
+    "status": "ACCEPTED",
+    "channel": "sms",
+    "recipient_id": "+50212345678",
+    "created_at": "2026-03-08T12:00:00Z",
+}
+
+
+def _load_request_payload(route: respx.Route) -> dict[str, Any]:
+    """
+    Test helper to retrieve the first request made and extract its parsed JSON payload
+    """
+    body = route.calls[0].request
+
+    payload = json.loads(body.content)
+
+    return payload
+
+
+@pytest.fixture
+def client() -> SinchClient:
+    return SinchClient(auth_token="test-token")
+
+
+@respx.mock
+def test_send_sms(client: SinchClient):
+    route = respx.post(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(202, json=MESSAGE_PAYLOAD)
+    )
+    msg = client.messages.send(to=SMS(phone_number="+50212345678"), text="Hello!")
+
+    assert msg.id == "msg_abc123"
+    assert msg.status == MessageStatus.ACCEPTED
+
+    request_payload = _load_request_payload(route)
+    assert request_payload["channel"] == "sms"
+    assert request_payload["recipient"] == "+50212345678"
+    assert request_payload["message_content"]["text_message"] == "Hello!"
+
+
+@respx.mock
+def test_send_whatsapp(client: SinchClient):
+    route = respx.post(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(
+            202,
+            json={
+                **MESSAGE_PAYLOAD,
+                "channel": "whatsapp",
+                "recipient_id": "+50287654321",
+            },
+        )
+    )
+    msg = client.messages.send(to=WhatsApp(phone_number="+50287654321"), text="Hi!")
+
+    assert msg.channel == "whatsapp"
+
+    request_payload = _load_request_payload(route)
+
+    assert request_payload["channel"] == "whatsapp"
+    assert request_payload["recipient"] == {
+        "identifier": "+50287654321",
+        "type": "whatsapp_id",
+    }
+    assert request_payload["message_content"]["text_message"] == "Hi!"
