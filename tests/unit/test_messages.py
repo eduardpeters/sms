@@ -100,3 +100,29 @@ def test_get_message_not_found(client: SinchClient):
     with pytest.raises(NotFoundError) as exc_info:
         client.messages.get("missing")
     assert exc_info.value.tracking_id == "tr-1"
+
+
+@respx.mock
+def test_recall_returns_none(client: SinchClient):
+    respx.delete(f"{BASE_URL}/messages/msg_abc123").mock(
+        return_value=httpx.Response(202)
+    )
+    result = client.messages.recall("msg_abc123")
+    assert result is None
+
+
+@respx.mock
+def test_recall_raises_when_not_allowed(client: SinchClient):
+    respx.delete(f"{BASE_URL}/messages/msg_abc123").mock(
+        return_value=httpx.Response(
+            403,
+            json={
+                "error_code": "RECALL_NOT_ALLOWED",
+                "detail": "Too late",
+                "tracking_id": "tr-2",
+            },
+        )
+    )
+    with pytest.raises(RecallNotAllowedError) as exc_info:
+        client.messages.recall("msg_abc123")
+    assert exc_info.value.code == "RECALL_NOT_ALLOWED"

@@ -51,3 +51,11 @@ class MessagesResource:
         response = self._http.request("GET", f"/messages/{message_id}")
         body = response.json()
         return Message.model_validate(body)
+
+    def recall(self, message_id: str) -> None:
+        """
+        Attempt to recall a message by its ID.
+        Availability depends on the channel.
+        If unable to recall raises `RecallNotAllowedError` with details.
+        """
+        self._http.request("DELETE", f"/messages/{message_id}")
