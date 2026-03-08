@@ -85,4 +85,4 @@ The SDK uses `snake_case` both for input and output models. It handles any incon
 ---
 
 ### Walkthrough
-🎬 [Video]()
+🎬 [Video](https://youtu.be/F7zgvdehoXY)
