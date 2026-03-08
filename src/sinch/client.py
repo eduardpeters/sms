@@ -1,5 +1,5 @@
 from sinch.internal.http import HttpClient
-from sinch.internal.messages import MessagesResource
+from sinch.resources.messages import MessagesResource
 
 
 class SinchClient:
