@@ -1,3 +1,6 @@
+from sinch.internal.http import HttpClient
+
+
 class SinchClient:
     """
     Client for the Sinch Messaging API.
@@ -22,3 +25,4 @@ class SinchClient:
 
         self._auth_token = auth_token
         self._base_url = base_url or self.BASE_URL
+        self._http = HttpClient(self._auth_token, self._base_url)
