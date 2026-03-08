@@ -103,6 +103,34 @@ def test_get_message_not_found(client: SinchClient):
 
 
 @respx.mock
+def test_list_returns_first_page(client: SinchClient):
+    respx.get(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(
+            200,
+            json={"messages": [MESSAGE_PAYLOAD], "next_page_token": "page-token"},
+        )
+    )
+    page = client.messages.list()
+    assert len(page.items) == 1
+    assert page.items[0].id == "msg_abc123"
+    assert page.has_next_page() is True
+    assert page._next_page_token == "page-token"
+
+
+@respx.mock
+def test_list_last_page_has_no_next(client: SinchClient):
+    respx.get(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(
+            200,
+            json={"messages": [MESSAGE_PAYLOAD], "next_page_token": None},
+        )
+    )
+    page = client.messages.list()
+    assert page.has_next_page() is False
+    assert page.next_page() is None
+
+
+@respx.mock
 def test_recall_returns_none(client: SinchClient):
     respx.delete(f"{BASE_URL}/messages/msg_abc123").mock(
         return_value=httpx.Response(202)
