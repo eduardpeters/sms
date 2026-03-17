@@ -88,3 +88,8 @@ def _raise_by_status_code(status_code: int, error: ErrorV1 | ErrorV2) -> None:
         raise NotFoundError(code=code, message=message, tracking_id=tracking_id)
     if status_code == 403:
         raise RecallNotAllowedError(code=code, message=message, tracking_id=tracking_id)
+
+    # Any unexpected status code raises generic API exception
+    raise SinchAPIError(
+        status_code=status_code, code=code, message=message, tracking_id=tracking_id
+    )

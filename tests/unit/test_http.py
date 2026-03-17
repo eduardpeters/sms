@@ -124,3 +124,46 @@ def test_raises_api_error_for_unparseable_error(client: HttpClient):
     assert err.status_code == 500
     assert err.code == "UNKNOWN"
     assert err.tracking_id is None
+
+
+@respx.mock
+def test_raises_api_error_for_unexpected_error_v1_responses(client: HttpClient):
+    respx.post(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(
+            500,
+            json={
+                "fault": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "description": "Unexpected error",
+                }
+            },
+        )
+    )
+    with pytest.raises(SinchAPIError) as exc_info:
+        client.request("POST", "/messages", json={})
+    err = exc_info.value
+    assert err.status_code == 500
+    assert err.code == "INTERNAL_SERVER_ERROR"
+    assert err.message == "Unexpected error"
+    assert err.tracking_id is None
+
+
+@respx.mock
+def test_raises_api_error_for_unexpected_error_v2_responses(client: HttpClient):
+    respx.post(f"{BASE_URL}/messages").mock(
+        return_value=httpx.Response(
+            500,
+            json={
+                "error_code": "INTERNAL_SERVER_ERROR",
+                "detail": "Unexpected error",
+                "tracking_id": "abc-123",
+            },
+        )
+    )
+    with pytest.raises(SinchAPIError) as exc_info:
+        client.request("POST", "/messages", json={})
+    err = exc_info.value
+    assert err.status_code == 500
+    assert err.code == "INTERNAL_SERVER_ERROR"
+    assert err.message == "Unexpected error"
+    assert err.tracking_id == "abc-123"
