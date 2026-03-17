@@ -7,7 +7,7 @@ name = "simple-messaging-sdk"
 version = "0.1.0"
 description = "A SDK intended for a simplified version of the Sinch Messaging API"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28",
     "pydantic>=2.12"
